@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>Board_Demo</AssemblyName>
-    <Name>Board_Demo</Name>
-    <RootNamespace>Board_Demo</RootNamespace>
+    <AssemblyName>BoardDemo</AssemblyName>
+    <Name>BoardDemo</Name>
+    <RootNamespace>BoardDemo</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
@@ -118,6 +118,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="5510_Controls.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="5510_Data.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
