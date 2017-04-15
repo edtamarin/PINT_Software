@@ -30,6 +30,9 @@
 #define LCD_LED PB1
 // contrast
 #define LCD_CONTRAST 0x40
+//possible colors
+#define BLACK 1
+#define WHITE 0
 
 static struct {
 	/* screen byte massive */
@@ -43,7 +46,7 @@ static struct {
 	.cursor_x = 0,
 	.cursor_y = 0
 };
-
+// generic write function
 static void LCD_write(uint8_t message, uint8_t type)
 {
 		register uint8_t i;
@@ -73,7 +76,7 @@ static void LCD_write(uint8_t message, uint8_t type)
 		/* Disable controller */
 		PORT_LCD |= (1 << LCD_SCE);
 }
-
+// initializes the LCD
 void LCD_initialize(void){
 	register unsigned i;
 	// Set pins as output
@@ -118,7 +121,7 @@ void LCD_initialize(void){
 void LCD_setBrightness(){
 	PORT_LCD |= (1<<LCD_LED);
 }
-
+// sets 1 pixel
 void LCD_setPixel(uint8_t x, uint8_t y, uint8_t value)
 {
 	uint8_t *byte = &nokia_lcd.screen[y/8*84+x];
@@ -135,41 +138,55 @@ void LCD_setBitmap(const uint8_t * bitArray){
 		  nokia_lcd.screen[i] = c;
 	  }
 }
-
-void LCD_writeChar(char code, uint8_t scale)
+// writes a character
+void LCD_writeChar(char code, uint8_t x, uint8_t y, uint8_t scale, uint8_t color)
 {
-	register uint8_t x, y;
-
-	for (x = 0; x < 5*scale; x++)
-	for (y = 0; y < 7*scale; y++)
-	if (pgm_read_byte(&CHARSET[code-32][x/scale]) & (1 << y/scale))
-	LCD_setPixel(nokia_lcd.cursor_x + x, nokia_lcd.cursor_y + y, 1);
-	else
-	LCD_setPixel(nokia_lcd.cursor_x + x, nokia_lcd.cursor_y + y, 0);
-
-	nokia_lcd.cursor_x += 5*scale + 1;
-	if (nokia_lcd.cursor_x >= 84) {
-		nokia_lcd.cursor_x = 0;
-		nokia_lcd.cursor_y += 7*scale + 1;
-	}
-	if (nokia_lcd.cursor_y >= 48) {
-		nokia_lcd.cursor_x = 0;
-		nokia_lcd.cursor_y = 0;
+	for (int x1 = 0; x1 < 5*scale; x1++){
+		uint8_t column = pgm_read_byte(&CHARSET[code-32][x1/scale]);
+		for (int y1 = 0; y1 < 8*scale; y1++){
+			if (column & (1 << y1/scale)){
+				LCD_setPixel(x + x1, y + y1, color);
+			}else{
+				LCD_setPixel(x + x1, y + y1, !color);
+			}
+		}
 	}
 }
-
-void LCD_writeString(const char *str, uint8_t scale)
+// writes a string
+void LCD_writeString(const char *str, uint8_t x, uint8_t y, uint8_t scale, uint8_t color)
 {
-	while(*str)
-	LCD_writeChar(*str++, scale);
+	while(*str){
+		LCD_writeChar(*str++, x, y, scale,color);
+		x += 5;
+		for (int i=y; i<y+8; i++)
+		{
+			LCD_setPixel(x, i, !color);
+		}
+		x++;
+		if (x > 79) // Enables wrap around
+		{
+		    x = 0;
+		    y += 8;
+		}		
+	}
 }
-
+// sets a cursor
 void LCD_setcursor(uint8_t x, uint8_t y)
 {
 	nokia_lcd.cursor_x = x;
 	nokia_lcd.cursor_y = y;
 }
-
+// clears the screen
+void LCD_clear(uint8_t value){
+	  for (int i=0; i<(504); i++)
+	  {
+		  if (value)
+		  nokia_lcd.screen[i] = 0xFF;
+		  else
+		  nokia_lcd.screen[i] = 0;
+	  }
+}
+// redraws the screen
 void LCD_update(void)
 {
 	register unsigned i;
