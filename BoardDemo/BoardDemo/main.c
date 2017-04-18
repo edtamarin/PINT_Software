@@ -40,7 +40,9 @@ int main(void)
 	ADCSRA |= (1<<ADATE)|(1<<ADEN)|(1<<ADSC); //define signal source, power up, start converting
     LCD_initialize(); // init LCD
 	LCD_setBrightness();
+	LCD_setBitmap(saxionLogo);
 	LCD_update();
+	_delay_ms(1500);
 	sei(); // enable interrupts
     while (1) // loop
     {
